@@ -1,0 +1,8 @@
+.DS_Store
+*.dSYM
+a.out
+.vscode/
+*.o
+tmp.*
+*.out.js
+*.out.wasm
