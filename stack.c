@@ -349,7 +349,7 @@ static void stack_put0(struct stack_mgr0 *mgr, struct stack0 *stack) {
 
 STACK_API
 void stack_put(struct stack_mgr *mgr, struct stack *stack) {
-    return stack_put0((void*)mgr, (void*)stack);
+    stack_put0((void*)mgr, (void*)stack);
 }
 
 static size_t stack_size0(struct stack0 *stack) {
