@@ -2,8 +2,6 @@
 
 A C library for managing stacks for coroutines and threads.
 
-It's designed for safety and efficency.
-
 ## Example
 
 ```c

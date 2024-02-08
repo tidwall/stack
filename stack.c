@@ -188,7 +188,7 @@ static void stack_push_freed_stack(struct stack_mgr0 *mgr,
 
 // initialize a stack manager
 
-static void stack_mgr_init0(struct stack_mgr0 *mgr, struct stack_opts *opts) {
+static void stack_mgr_init_(struct stack_mgr0 *mgr, struct stack_opts *opts) {
     size_t pagesz = (size_t)sysconf(_SC_PAGESIZE);
     size_t stacksz = opts && opts->stacksz ? opts->stacksz : 8388608;
     stacksz = stack_align_size(stacksz, pagesz);
@@ -215,11 +215,11 @@ static void stack_mgr_init0(struct stack_mgr0 *mgr, struct stack_opts *opts) {
 
 STACK_API
 void stack_mgr_init(struct stack_mgr *mgr, struct stack_opts *opts) {
-    stack_mgr_init0((void*)mgr, opts);
+    stack_mgr_init_((void*)mgr, opts);
 }
 
 
-static void stack_mgr_destroy0(struct stack_mgr0 *mgr) {
+static void stack_mgr_destroy_(struct stack_mgr0 *mgr) {
     struct stack_group *group = mgr->group_head->next;
     while (group != mgr->group_tail) {
         struct stack_group *next = group->next;
@@ -231,7 +231,7 @@ static void stack_mgr_destroy0(struct stack_mgr0 *mgr) {
 
 STACK_API
 void stack_mgr_destroy(struct stack_mgr *mgr) {
-    stack_mgr_destroy0((void*)mgr);
+    stack_mgr_destroy_((void*)mgr);
 }
 
 static void stack_release_group(struct stack_group *group, bool nofreelist) {
@@ -248,7 +248,7 @@ static void stack_release_group(struct stack_group *group, bool nofreelist) {
     stack_group_free(group);
 }
 
-static int stack_get0(struct stack_mgr0 *mgr, struct stack0 *stack) {
+static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
     struct stack_group *group;
     if (!mgr->nostackfreelist) {
         struct stack_freed *fstack = mgr->free_tail->prev;
@@ -307,10 +307,10 @@ static int stack_get0(struct stack_mgr0 *mgr, struct stack0 *stack) {
 
 STACK_API
 int stack_get(struct stack_mgr *mgr, struct stack *stack) {
-    return stack_get0((void*)mgr, (void*)stack);
+    return stack_get_((void*)mgr, (void*)stack);
 }
 
-static void stack_put0(struct stack_mgr0 *mgr, struct stack0 *stack) {
+static void stack_put_(struct stack_mgr0 *mgr, struct stack0 *stack) {
     void *addr = stack->addr;
     struct stack_group *group = stack->group;
     if (!mgr->nopagerelease){
@@ -349,23 +349,23 @@ static void stack_put0(struct stack_mgr0 *mgr, struct stack0 *stack) {
 
 STACK_API
 void stack_put(struct stack_mgr *mgr, struct stack *stack) {
-    stack_put0((void*)mgr, (void*)stack);
+    stack_put_((void*)mgr, (void*)stack);
 }
 
-static size_t stack_size0(struct stack0 *stack) {
+static size_t stack_size_(struct stack0 *stack) {
     return stack->group->stacksz;
 }
 
 STACK_API
 size_t stack_size(struct stack *stack) {
-    return stack_size0((void*)stack);
+    return stack_size_((void*)stack);
 }
 
-static void *stack_addr0(struct stack0 *stack) {
+static void *stack_addr_(struct stack0 *stack) {
     return stack->addr;
 }
 
 STACK_API
 void *stack_addr(struct stack *stack) {
-    return stack_addr0((void*)stack);
+    return stack_addr_((void*)stack);
 }
