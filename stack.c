@@ -270,6 +270,7 @@ static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
             group = stack_freed_remove(fstack);
             group->use++;
             stack->addr = fstack;
+            stack->size = mgr->stacksz;
             stack->group = group;
             return 0;
         }
