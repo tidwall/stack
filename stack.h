@@ -18,9 +18,10 @@ struct stack_opts {
     bool useguards;       // Use mprotect'ed guard pages (default false)
     bool nostackfreelist; // Do not use a stack free list (default false)
     bool nopagerelease;   // Do not early release mmapped pages (default false)
+    bool onlymalloc;      // Only use malloc. Everything but stacksz is ignored.
 };
 
-struct stack { char _[16]; };
+struct stack { char _[32]; };
 struct stack_mgr { char _[320]; };
 
 void stack_mgr_init(struct stack_mgr *mgr, struct stack_opts *opts);

@@ -23,8 +23,9 @@ struct stack_opts {
     bool useguards;
     bool nostackfreelist;
     bool nopagerelease;
+    bool onlymalloc;
 };
-struct stack { char _[16]; };
+struct stack { char _[32]; };
 struct stack_mgr { char _[320]; };
 #endif
 
@@ -61,6 +62,7 @@ struct stack_mgr0 {
     bool useguards;
     bool nostackfreelist;
     bool nopagerelease;
+    bool onlymalloc;
     struct stack_group gendcaps[2];
     struct stack_group *group_head;
     struct stack_group *group_tail;
@@ -71,6 +73,7 @@ struct stack_mgr0 {
 
 struct stack0 {
     void *addr;
+    size_t size;
     struct stack_group *group;
 };
 
@@ -200,6 +203,7 @@ static void stack_mgr_init_(struct stack_mgr0 *mgr, struct stack_opts *opts) {
     mgr->useguards = opts && opts->useguards;
     mgr->nostackfreelist = opts && opts->nostackfreelist;
     mgr->nopagerelease = opts && opts->nopagerelease;
+    mgr->onlymalloc = opts && opts->onlymalloc;
     mgr->pagesz = pagesz;
     mgr->group_head = &mgr->gendcaps[0];
     mgr->group_tail = &mgr->gendcaps[1];
@@ -249,6 +253,16 @@ static void stack_release_group(struct stack_group *group, bool nofreelist) {
 }
 
 static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
+    if (mgr->onlymalloc) {
+        void *addr = malloc(mgr->stacksz);
+        if (!addr) {
+            return -1;
+        }
+        stack->addr = addr;
+        stack->size = mgr->stacksz;
+        stack->group = 0;
+        return 0;
+    }
     struct stack_group *group;
     if (!mgr->nostackfreelist) {
         struct stack_freed *fstack = mgr->free_tail->prev;
@@ -301,6 +315,7 @@ static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
     group->pos++;
     group->use++;
     stack->addr = addr;
+    stack->size = mgr->stacksz;
     stack->group = group;
     return 0;
 }
@@ -311,6 +326,10 @@ int stack_get(struct stack_mgr *mgr, struct stack *stack) {
 }
 
 static void stack_put_(struct stack_mgr0 *mgr, struct stack0 *stack) {
+    if (mgr->onlymalloc) {
+        free(stack->addr);
+        return;
+    }
     void *addr = stack->addr;
     struct stack_group *group = stack->group;
     if (!mgr->nopagerelease){
@@ -353,7 +372,7 @@ void stack_put(struct stack_mgr *mgr, struct stack *stack) {
 }
 
 static size_t stack_size_(struct stack0 *stack) {
-    return stack->group->stacksz;
+    return stack->size;
 }
 
 STACK_API
