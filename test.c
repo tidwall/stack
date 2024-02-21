@@ -13,6 +13,7 @@ int main(void) {
         assert(stack_get(&mgr, &stacks[i]) == 0);
     }
     for (int i = 0 ; i < N; i++) {
+        printf("%d\n", i);
         char *addr = stack_addr(&stacks[i]);
         size_t size = stack_size(&stacks[i]);
         assert(addr);
