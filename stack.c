@@ -92,6 +92,7 @@ static size_t stack_align_size(size_t size, size_t boundary) {
 }
 
 // allocate memory using mmap. Used primarily for stack group memory.
+#ifndef _WIN32
 static void *stack_mmap_alloc(size_t size) {
 #ifdef _WIN32
     void *addr = malloc(size);
@@ -104,6 +105,7 @@ static void *stack_mmap_alloc(size_t size) {
 #endif
     return addr;
 }
+#endif
 
 // free the stack group memory
 static void stack_mmap_free(void *addr, size_t size) {
