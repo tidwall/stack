@@ -5,14 +5,11 @@
 // license that can be found in the LICENSE file.
 
 #include <unistd.h>
+#include <sys/mman.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
-
-#ifndef _WIN32
-#include <sys/mman.h>
-#endif
 
 #ifndef STACK_STATIC
 #include "stack.h"
@@ -90,8 +87,6 @@ static size_t stack_align_size(size_t size, size_t boundary) {
            size&(boundary-1) ? size+boundary-(size&(boundary-1)) : 
            size;
 }
-
-#ifndef _WIN32
 
 // allocate memory using mmap. Used primarily for stack group memory.
 static void *stack_mmap_alloc(size_t size) {
@@ -194,16 +189,10 @@ static void stack_push_freed_stack(struct stack_mgr0 *mgr,
     stack->group = group;
 }
 
-#endif
-
 // initialize a stack manager
 
 static void stack_mgr_init_(struct stack_mgr0 *mgr, struct stack_opts *opts) {
-#ifdef _WIN32
-    size_t pagesz = 4096;
-#else
     size_t pagesz = (size_t)sysconf(_SC_PAGESIZE);
-#endif
     size_t stacksz = opts && opts->stacksz ? opts->stacksz : 8388608;
     stacksz = stack_align_size(stacksz, pagesz);
     memset(mgr, 0, sizeof(struct stack_mgr0));
@@ -226,9 +215,6 @@ static void stack_mgr_init_(struct stack_mgr0 *mgr, struct stack_opts *opts) {
         mgr->free_head->next = mgr->free_tail;
         mgr->free_tail->prev = mgr->free_head;
     }
-#ifdef _WIN32
-    mgr->onlymalloc = true;
-#endif
 }
 
 STACK_API
@@ -277,7 +263,6 @@ static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
         stack->group = 0;
         return 0;
     }
-#ifndef _WIN32
     struct stack_group *group;
     if (!mgr->nostackfreelist) {
         struct stack_freed *fstack = mgr->free_tail->prev;
@@ -333,7 +318,6 @@ static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
     stack->addr = addr;
     stack->size = mgr->stacksz;
     stack->group = group;
-#endif
     return 0;
 }
 
@@ -347,7 +331,6 @@ static void stack_put_(struct stack_mgr0 *mgr, struct stack0 *stack) {
         free(stack->addr);
         return;
     }
-#ifndef _WIN32
     void *addr = stack->addr;
     struct stack_group *group = stack->group;
     if (!mgr->nopagerelease){
@@ -382,7 +365,6 @@ static void stack_put_(struct stack_mgr0 *mgr, struct stack0 *stack) {
         // The group should be fully released back to the operating system.
         stack_release_group(group, mgr->nostackfreelist);        
     }
-#endif
 }
 
 STACK_API
