@@ -350,6 +350,7 @@ static void stack_put_(struct stack_mgr0 *mgr, struct stack0 *stack) {
     }
     void *addr = stack->addr;
     struct stack_group *group = stack->group;
+#ifndef _WIN32
     if (!mgr->nopagerelease){
         char *stack0 = addr;
         size_t stacksz = group->stacksz;
@@ -367,6 +368,7 @@ static void stack_put_(struct stack_mgr0 *mgr, struct stack0 *stack) {
             assert(addr == stack0);
         }
     }
+#endif
     group->use--;
     if (!mgr->nostackfreelist) {
         // Add the stack to the stack freed linked list. 
