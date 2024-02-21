@@ -193,6 +193,7 @@ static void stack_push_group(struct stack_mgr0 *mgr, struct stack_group *group)
     mgr->group_tail->prev = group;
 }
 
+#ifndef _WIN32
 static void stack_push_freed_stack(struct stack_mgr0 *mgr, 
     struct stack_freed *stack, struct stack_group *group)
 {
@@ -202,6 +203,7 @@ static void stack_push_freed_stack(struct stack_mgr0 *mgr,
     mgr->free_tail->prev = stack;
     stack->group = group;
 }
+#endif
 
 // initialize a stack manager
 
