@@ -10,10 +10,10 @@ int main(void) {
     stack_mgr_init(&mgr, 0);
     struct stack stacks[N];
     for (int i = 0 ; i < N; i++) {
+        printf("%d\n", i);
         assert(stack_get(&mgr, &stacks[i]) == 0);
     }
     for (int i = 0 ; i < N; i++) {
-        printf("%d\n", i);
         char *addr = stack_addr(&stacks[i]);
         size_t size = stack_size(&stacks[i]);
         assert(addr);
