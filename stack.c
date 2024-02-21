@@ -100,6 +100,7 @@ static void *stack_mmap_alloc(size_t size) {
     if (addr == MAP_FAILED || addr == NULL) {
         return NULL;
     }
+    return addr;
 }
 
 // free the stack group memory
