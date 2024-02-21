@@ -184,6 +184,7 @@ static struct stack_group *stack_freed_remove(struct stack_freed *stack) {
     return group;
 }
 
+#ifndef _WIN32
 // push a stack_group to the end of the manager group list.
 static void stack_push_group(struct stack_mgr0 *mgr, struct stack_group *group)
 {
@@ -193,7 +194,6 @@ static void stack_push_group(struct stack_mgr0 *mgr, struct stack_group *group)
     mgr->group_tail->prev = group;
 }
 
-#ifndef _WIN32
 static void stack_push_freed_stack(struct stack_mgr0 *mgr, 
     struct stack_freed *stack, struct stack_group *group)
 {
