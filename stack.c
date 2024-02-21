@@ -230,6 +230,9 @@ static void stack_mgr_init_(struct stack_mgr0 *mgr, struct stack_opts *opts) {
         mgr->free_head->next = mgr->free_tail;
         mgr->free_tail->prev = mgr->free_head;
     }
+#ifdef _WIN32
+    mgr->onlymalloc = true;
+#endif
 }
 
 STACK_API
@@ -278,6 +281,7 @@ static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
         stack->group = 0;
         return 0;
     }
+#ifndef _WIN32
     struct stack_group *group;
     if (!mgr->nostackfreelist) {
         struct stack_freed *fstack = mgr->free_tail->prev;
@@ -304,7 +308,6 @@ static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
         stack_push_group(mgr, group);
     }
     char *addr = group->stack0 + (group->stacksz+group->gapsz) * group->pos;
-#ifndef _WIN32
     if (group->guards) {
         // Add page guards to the coroutine stack.
         // A failure here usually means that there isn't enough system memory 
@@ -329,12 +332,12 @@ static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
             return -1;
         }
     }
-#endif
     group->pos++;
     group->use++;
     stack->addr = addr;
     stack->size = mgr->stacksz;
     stack->group = group;
+#endif
     return 0;
 }
 
@@ -348,9 +351,9 @@ static void stack_put_(struct stack_mgr0 *mgr, struct stack0 *stack) {
         free(stack->addr);
         return;
     }
+#ifndef _WIN32
     void *addr = stack->addr;
     struct stack_group *group = stack->group;
-#ifndef _WIN32
     if (!mgr->nopagerelease){
         char *stack0 = addr;
         size_t stacksz = group->stacksz;
@@ -368,7 +371,6 @@ static void stack_put_(struct stack_mgr0 *mgr, struct stack0 *stack) {
             assert(addr == stack0);
         }
     }
-#endif
     group->use--;
     if (!mgr->nostackfreelist) {
         // Add the stack to the stack freed linked list. 
@@ -384,6 +386,7 @@ static void stack_put_(struct stack_mgr0 *mgr, struct stack0 *stack) {
         // The group should be fully released back to the operating system.
         stack_release_group(group, mgr->nostackfreelist);        
     }
+#endif
 }
 
 STACK_API
