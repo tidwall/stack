@@ -259,6 +259,7 @@ void stack_mgr_destroy(struct stack_mgr *mgr) {
     stack_mgr_destroy_((void*)mgr);
 }
 
+#ifndef _WIN32
 static void stack_release_group(struct stack_group *group, bool nofreelist) {
     // Remove all stacks from free list, remove the group from the group list,
     // and free group.
@@ -272,6 +273,7 @@ static void stack_release_group(struct stack_group *group, bool nofreelist) {
     stack_group_remove(group);
     stack_group_free(group);
 }
+#endif
 
 static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
     if (mgr->onlymalloc) {
