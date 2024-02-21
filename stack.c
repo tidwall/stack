@@ -83,6 +83,8 @@ struct stack0 {
 static_assert(sizeof(struct stack) >= sizeof(struct stack0), "");
 static_assert(sizeof(struct stack_mgr) >= sizeof(struct stack_mgr0), "");
 
+#ifndef _WIN32
+
 // Returns a size that is aligned  to a boundary.
 // The boundary must be a power of 2.
 static size_t stack_align_size(size_t size, size_t boundary) {
@@ -93,26 +95,18 @@ static size_t stack_align_size(size_t size, size_t boundary) {
 
 // allocate memory using mmap. Used primarily for stack group memory.
 static void *stack_mmap_alloc(size_t size) {
-#ifdef _WIN32
-    void *addr = malloc(size);
-#else
     void *addr = mmap(NULL, size, PROT_READ | PROT_WRITE,
         MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     if (addr == MAP_FAILED || addr == NULL) {
         return NULL;
     }
-#endif
     return addr;
 }
 
 // free the stack group memory
 static void stack_mmap_free(void *addr, size_t size) {
     if (addr) {
-#ifdef _WIN32
-        free(addr);
-#else
         assert(munmap(addr, size) == 0);
-#endif
     }
 }
 
@@ -199,6 +193,8 @@ static void stack_push_freed_stack(struct stack_mgr0 *mgr,
     mgr->free_tail->prev = stack;
     stack->group = group;
 }
+
+#endif
 
 // initialize a stack manager
 
