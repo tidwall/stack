@@ -203,7 +203,11 @@ static void stack_push_freed_stack(struct stack_mgr0 *mgr,
 // initialize a stack manager
 
 static void stack_mgr_init_(struct stack_mgr0 *mgr, struct stack_opts *opts) {
+#ifdef _WIN32
+    size_t pagesz = 4096;
+#else
     size_t pagesz = (size_t)sysconf(_SC_PAGESIZE);
+#endif
     size_t stacksz = opts && opts->stacksz ? opts->stacksz : 8388608;
     stacksz = stack_align_size(stacksz, pagesz);
     memset(mgr, 0, sizeof(struct stack_mgr0));
@@ -300,6 +304,7 @@ static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
         stack_push_group(mgr, group);
     }
     char *addr = group->stack0 + (group->stacksz+group->gapsz) * group->pos;
+#ifndef _WIN32
     if (group->guards) {
         // Add page guards to the coroutine stack.
         // A failure here usually means that there isn't enough system memory 
@@ -324,6 +329,7 @@ static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
             return -1;
         }
     }
+#endif
     group->pos++;
     group->use++;
     stack->addr = addr;
