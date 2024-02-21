@@ -83,8 +83,6 @@ struct stack0 {
 static_assert(sizeof(struct stack) >= sizeof(struct stack0), "");
 static_assert(sizeof(struct stack_mgr) >= sizeof(struct stack_mgr0), "");
 
-#ifndef _WIN32
-
 // Returns a size that is aligned  to a boundary.
 // The boundary must be a power of 2.
 static size_t stack_align_size(size_t size, size_t boundary) {
@@ -92,6 +90,8 @@ static size_t stack_align_size(size_t size, size_t boundary) {
            size&(boundary-1) ? size+boundary-(size&(boundary-1)) : 
            size;
 }
+
+#ifndef _WIN32
 
 // allocate memory using mmap. Used primarily for stack group memory.
 static void *stack_mmap_alloc(size_t size) {
