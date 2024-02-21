@@ -249,12 +249,14 @@ void stack_mgr_init(struct stack_mgr *mgr, struct stack_opts *opts) {
 
 
 static void stack_mgr_destroy_(struct stack_mgr0 *mgr) {
+#ifndef _WIN32
     struct stack_group *group = mgr->group_head->next;
     while (group != mgr->group_tail) {
         struct stack_group *next = group->next;
         stack_group_free(group);
         group = next;
     }
+#endif
     memset(mgr, 0, sizeof(struct stack_mgr0));
 }
 
