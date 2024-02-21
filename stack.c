@@ -167,6 +167,7 @@ static void stack_group_free(struct stack_group *group) {
     stack_mmap_free(group, group->allocsz);
 }
 
+#ifndef _WIN32
 static void stack_group_remove(struct stack_group *group) {
     group->prev->next = group->next;
     group->next->prev = group->prev;
@@ -174,7 +175,6 @@ static void stack_group_remove(struct stack_group *group) {
     group->prev = NULL;
 }
 
-#ifndef _WIN32
 static struct stack_group *stack_freed_remove(struct stack_freed *stack) {
     stack->prev->next = stack->next;
     stack->next->prev = stack->prev;
