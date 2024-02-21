@@ -5,11 +5,14 @@
 // license that can be found in the LICENSE file.
 
 #include <unistd.h>
-#include <sys/mman.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
+
+#ifndef _WIN32
+#include <sys/mman.h>
+#endif
 
 #ifndef STACK_STATIC
 #include "stack.h"
@@ -90,18 +93,26 @@ static size_t stack_align_size(size_t size, size_t boundary) {
 
 // allocate memory using mmap. Used primarily for stack group memory.
 static void *stack_mmap_alloc(size_t size) {
+#ifdef _WIN32
+    void *addr = malloc(size);
+#else
     void *addr = mmap(NULL, size, PROT_READ | PROT_WRITE,
         MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     if (addr == MAP_FAILED || addr == NULL) {
         return NULL;
     }
+#endif
     return addr;
 }
 
 // free the stack group memory
 static void stack_mmap_free(void *addr, size_t size) {
     if (addr) {
+#ifdef _WIN32
+        free(addr);
+#else
         assert(munmap(addr, size) == 0);
+#endif
     }
 }
 
