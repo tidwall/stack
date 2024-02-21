@@ -109,6 +109,7 @@ static void *stack_mmap_alloc(size_t size) {
 static void stack_mmap_free(void *addr, size_t size) {
     if (addr) {
 #ifdef _WIN32
+        (void)size;
         free(addr);
 #else
         assert(munmap(addr, size) == 0);
@@ -116,6 +117,7 @@ static void stack_mmap_free(void *addr, size_t size) {
     }
 }
 
+#ifndef _WIN32
 static struct stack_group *stack_group_new(size_t stacksz, size_t pagesz,
     size_t cap, size_t gapsz, bool useguards)
 {
@@ -159,6 +161,7 @@ static struct stack_group *stack_group_new(size_t stacksz, size_t pagesz,
     group->cap = cap;
     return group;
 }
+#endif
 
 static void stack_group_free(struct stack_group *group) {
     stack_mmap_free(group, group->allocsz);
