@@ -91,28 +91,21 @@ static size_t stack_align_size(size_t size, size_t boundary) {
            size;
 }
 
+#ifndef _WIN32
+
 // allocate memory using mmap. Used primarily for stack group memory.
 static void *stack_mmap_alloc(size_t size) {
-#ifdef _WIN32
-    void *addr = malloc(size);
-#else
     void *addr = mmap(NULL, size, PROT_READ | PROT_WRITE,
         MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     if (addr == MAP_FAILED || addr == NULL) {
         return NULL;
     }
-#endif
-    return addr;
 }
 
 // free the stack group memory
 static void stack_mmap_free(void *addr, size_t size) {
     if (addr) {
-#ifdef _WIN32
-        free(addr);
-#else
         assert(munmap(addr, size) == 0);
-#endif
     }
 }
 
@@ -199,6 +192,7 @@ static void stack_push_freed_stack(struct stack_mgr0 *mgr,
     mgr->free_tail->prev = stack;
     stack->group = group;
 }
+#endif
 
 // initialize a stack manager
 
@@ -242,12 +236,14 @@ void stack_mgr_init(struct stack_mgr *mgr, struct stack_opts *opts) {
 
 
 static void stack_mgr_destroy_(struct stack_mgr0 *mgr) {
+#ifndef _WIN32
     struct stack_group *group = mgr->group_head->next;
     while (group != mgr->group_tail) {
         struct stack_group *next = group->next;
         stack_group_free(group);
         group = next;
     }
+#endif
     memset(mgr, 0, sizeof(struct stack_mgr0));
 }
 
@@ -256,6 +252,7 @@ void stack_mgr_destroy(struct stack_mgr *mgr) {
     stack_mgr_destroy_((void*)mgr);
 }
 
+#ifndef _WIN32
 static void stack_release_group(struct stack_group *group, bool nofreelist) {
     // Remove all stacks from free list, remove the group from the group list,
     // and free group.
@@ -269,6 +266,7 @@ static void stack_release_group(struct stack_group *group, bool nofreelist) {
     stack_group_remove(group);
     stack_group_free(group);
 }
+#endif
 
 static int stack_get_(struct stack_mgr0 *mgr, struct stack0 *stack) {
     if (mgr->onlymalloc) {
